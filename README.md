@@ -19,6 +19,8 @@
   </a>
 </p>
 
+> ### ⚠️Dragonfire update of 08/31 broke network eventcodes, currently working on it [#196](https://github.com/Nouuu/Albion-Online-OpenRadar/issues/196) - [#194](https://github.com/Nouuu/Albion-Online-OpenRadar/pull/194)
+
 https://github.com/user-attachments/assets/33fe1ac7-11f2-4c3c-a91c-0ab42ebdda7d
 
 ---
