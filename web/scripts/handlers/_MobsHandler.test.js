@@ -235,6 +235,26 @@ describe('MobsHandler', () => {
             }
         );
 
+        // @verified 2026-08-31: Dragonfire data refresh. Living wood must keep
+        // its real harvest tier; stale mob tables previously displayed T6 wood as T8.
+        test.each([
+            ['T6_MOB_CRITTER_WOOD_MISTS_RED', 6],
+            ['T8_MOB_CRITTER_WOOD_MISTS_RED', 8],
+        ])('Dragonfire living wood: %s resolves as Log tier %d', (uniqueName, expectedTier) => {
+            const typeId = dbs.mobsDatabase.getTypeIdByName(uniqueName);
+            expect(typeId).not.toBeNull();
+            const p = normalizeParams({'0': 98000 + typeId, '1': typeId, '2': 255, '7': [0, 0], '13': 1700, '33': 0});
+
+            handler.NewMobEvent(p);
+
+            const mobs = handler.getMobList();
+            expect(mobs).toHaveLength(1);
+            expect(mobs[0].type).toBe(EnemyType.LivingHarvestable);
+            expect(mobs[0].name).toBe('Log');
+            expect(mobs[0].tier).toBe(expectedTier);
+            expect(mobs[0].uniqueName).toBe(uniqueName);
+        });
+
         // @verified 2026-07-05: hostile MISTS_MORGANA family from the 2026-07-05 capture.
         // Every category observed maps through _getEnemyTypeFromCategory.
         const HOSTILE_FIXTURE = [
