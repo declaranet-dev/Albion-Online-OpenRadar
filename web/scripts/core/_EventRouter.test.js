@@ -1063,6 +1063,28 @@ describe('EventRouter', () => {
             expect(allHandlerCalls()).toHaveLength(0);
         });
 
+        // @verified 2026-08-31: the debug log resolves the event name from the generated table.
+        test('event name in the debug log is resolved from the generated table', () => {
+            EventRouter.onEvent({0: 1, 252: EventCodes.Leave});
+
+            expect(window.logger.debug).toHaveBeenCalledWith(
+                expect.anything(),
+                `Event_${EventCodes.Leave}_ID_1`,
+                expect.objectContaining({eventName: 'Leave'})
+            );
+        });
+
+        // @verified 2026-08-31: a code absent from the generated table falls back to Unknown_<code>.
+        test('event name falls back to Unknown for a code absent from the table', () => {
+            EventRouter.onEvent({0: 1, 252: 9999});
+
+            expect(window.logger.debug).toHaveBeenCalledWith(
+                expect.anything(),
+                'Event_9999_ID_1',
+                expect.objectContaining({eventName: 'Unknown_9999'})
+            );
+        });
+
         // @verified 2026-04-18: completely unknown code produces no side effect and no throw
         test('unknown event code 9999 does not invoke any handler method and does not throw', () => {
             // synthetic
