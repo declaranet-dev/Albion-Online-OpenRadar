@@ -663,38 +663,38 @@ describe('EventRouter', () => {
     describe('onEvent NewCharacter', () => {
         // @verified 2026-04-18: pcap-derived spawn routes to handleNewPlayerEvent with id + full params
         test('NewCharacter pcap-derived: dispatches handleNewPlayerEvent', async () => {
-            // pcap-derived: players/spawn.json message[0], params[0]=9956, params[252]=29
+            // pcap-derived: players/spawn.json message[0], 2026-09-03 capture
             const fix = await loadFixture('players', 'spawn');
             const msg = fix.messages[0];
             const p = normalizeParams(msg.parameters);
 
             EventRouter.onEvent(p);
 
-            expect(handlers.playersHandler.handleNewPlayerEvent).toHaveBeenCalledWith(9956, p);
+            expect(handlers.playersHandler.handleNewPlayerEvent).toHaveBeenCalledWith(p[0], p);
         });
 
         // @verified 2026-04-18: second spawn variant (different player id)
         test('NewCharacter pcap-derived: second player variant dispatches correctly', async () => {
-            // pcap-derived: players/spawn.json message[1], params[0]=9512
+            // pcap-derived: players/spawn.json message[1], 2026-09-03 capture
             const fix = await loadFixture('players', 'spawn');
             const msg = fix.messages[1];
             const p = normalizeParams(msg.parameters);
 
             EventRouter.onEvent(p);
 
-            expect(handlers.playersHandler.handleNewPlayerEvent).toHaveBeenCalledWith(9512, p);
+            expect(handlers.playersHandler.handleNewPlayerEvent).toHaveBeenCalledWith(p[0], p);
         });
 
         // @verified 2026-04-18: third player variant with guild tag
         test('NewCharacter pcap-derived: high-gear player with guild dispatches correctly', async () => {
-            // pcap-derived: players/spawn.json message[7], params[0]=1441, params[51]="JOIN"
+            // pcap-derived: players/spawn.json message[7], 2026-09-03 capture, guild tag in params[51]
             const fix = await loadFixture('players', 'spawn');
             const msg = fix.messages[7];
             const p = normalizeParams(msg.parameters);
 
             EventRouter.onEvent(p);
 
-            expect(handlers.playersHandler.handleNewPlayerEvent).toHaveBeenCalledWith(1441, p);
+            expect(handlers.playersHandler.handleNewPlayerEvent).toHaveBeenCalledWith(p[0], p);
         });
     });
 
@@ -704,14 +704,14 @@ describe('EventRouter', () => {
     describe('onEvent CharacterEquipmentChanged', () => {
         // @verified 2026-07-24: pcap-derived equipment change dispatches updateItems
         test('CharacterEquipmentChanged pcap-derived: dispatches updateItems with id and params', async () => {
-            // pcap-derived: players/equipment.json message[0], params[0]=107652, params[252]=90
+            // pcap-derived: players/equipment.json message[0], 2026-09-03 capture
             const fix = await loadFixture('players', 'equipment');
             const msg = fix.messages[0];
             const p = normalizeParams(msg.parameters);
 
             EventRouter.onEvent(p);
 
-            expect(handlers.playersHandler.updateItems).toHaveBeenCalledWith(107652, p);
+            expect(handlers.playersHandler.updateItems).toHaveBeenCalledWith(p[0], p);
         });
     });
 
@@ -783,26 +783,26 @@ describe('EventRouter', () => {
     describe('onEvent NewHarvestableObject', () => {
         // @verified 2026-04-18: single harvestable spawn dispatches newHarvestableObject(id, params)
         test('NewHarvestableObject pcap-derived: dispatches newHarvestableObject with id', async () => {
-            // pcap-derived: harvestables/single-spawn.json message[0], params[0]=2246
+            // pcap-derived: harvestables/single-spawn.json message[0], 2026-09-03 capture
             const fix = await loadFixture('harvestables', 'single-spawn');
             const msg = fix.messages[0];
             const p = normalizeParams(msg.parameters);
 
             EventRouter.onEvent(p);
 
-            expect(handlers.harvestablesHandler.newHarvestableObject).toHaveBeenCalledWith(2246, p);
+            expect(handlers.harvestablesHandler.newHarvestableObject).toHaveBeenCalledWith(p[0], p);
         });
 
-        // @verified 2026-04-18: enchanted stone variant (params[6]=529)
-        test('NewHarvestableObject pcap-derived: enchanted stone variant dispatches correctly', async () => {
-            // pcap-derived: harvestables/single-spawn.json message[2], params[0]=8403, params[6]=529
+        // @verified 2026-09-03: a later message in the same fixture dispatches the same way
+        test('NewHarvestableObject pcap-derived: third fixture message dispatches correctly', async () => {
+            // pcap-derived: harvestables/single-spawn.json message[2], 2026-09-03 capture
             const fix = await loadFixture('harvestables', 'single-spawn');
             const msg = fix.messages[2];
             const p = normalizeParams(msg.parameters);
 
             EventRouter.onEvent(p);
 
-            expect(handlers.harvestablesHandler.newHarvestableObject).toHaveBeenCalledWith(8403, p);
+            expect(handlers.harvestablesHandler.newHarvestableObject).toHaveBeenCalledWith(p[0], p);
         });
     });
 

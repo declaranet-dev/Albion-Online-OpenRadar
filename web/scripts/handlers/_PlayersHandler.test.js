@@ -59,8 +59,10 @@ describe('PlayersHandler', () => {
         });
 
         // @verified 2026-04-18: faction player (faction=5) lands with stored faction value.
-        test('pcap-derived spawn: faction=5 player stores faction field', async () => {
-            const fx = await loadFixture('players', 'spawn');
+        // pcap-derived players/faction-spawn.json, 2026-04 capture: the only faction-flagged spawn in the corpus.
+        // Its equipment ids predate Dragonfire; only Parameters[53] is read here.
+        test('pcap-derived faction-spawn: faction=5 player stores faction field', async () => {
+            const fx = await loadFixture('players', 'faction-spawn');
             const msg = fx.messages.find(m => m.parameters['53'] === 5);
             expect(msg).toBeDefined();
             const p = normalizeParams(msg.parameters);
