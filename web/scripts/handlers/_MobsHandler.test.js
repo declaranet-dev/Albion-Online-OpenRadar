@@ -56,6 +56,47 @@ describe('MobsHandler', () => {
             expect(sizes.mobs).toBe(0);
         });
 
+        // @verified 2026-09-03: Dragonfire moved the portal tag from Parameters[32] to Parameters[33] and the
+        // enchant from [33] to [34]. pcap-derived, 2026-09-03 Highland capture, wires 120 and 127.
+        test('pcap-derived portal-wisp: MISTS_SOLO_YELLOW at Parameters[33] lands in mistList as a solo portal', async () => {
+            const fx = await loadFixture('mists', 'portal-wisp-spawn');
+            const msg = fx.messages.find(m => m.parameters['33'] === 'MISTS_SOLO_YELLOW');
+            expect(msg).toBeDefined();
+            expect(msg.parameters['1']).toBe(120);
+
+            handler.NewMobEvent(normalizeParams(msg.parameters));
+
+            expect(handler.getSize()).toEqual(expect.objectContaining({mists: 1, mobs: 0}));
+            expect(handler.mistList[0].type).toBe(0);
+        });
+
+        test('pcap-derived portal-wisp: duo uncommon wisp carries its enchant from Parameters[34]', async () => {
+            const fx = await loadFixture('mists', 'portal-wisp-spawn');
+            const msg = fx.messages.find(m => m.parameters['33'] === 'MISTS_DUO_BLACK');
+            expect(msg).toBeDefined();
+            expect(msg.parameters['1']).toBe(127);
+
+            handler.NewMobEvent(normalizeParams(msg.parameters));
+
+            expect(handler.getSize()).toEqual(expect.objectContaining({mists: 1, mobs: 0}));
+            expect(handler.mistList[0].type).toBe(1);
+            expect(handler.mistList[0].enchant).toBe(2);
+        });
+
+        // @verified 2026-09-03: Dragonfire names Mists creatures with a MISTS_ prefix in Parameters[31]. A name
+        // there is a mob, never a portal. pcap-derived, 2026-09-03 Mists capture, wire 416.
+        test('pcap-derived mist-boss: MISTS_MOB_MYTHICAL_FAIRYDRAGON_T6 lands in mobsList, never in mistList', async () => {
+            const fx = await loadFixture('mobs', 'mist-boss-spawn');
+            const msg = fx.messages.find(m => m.parameters['31'] === 'MISTS_MOB_MYTHICAL_FAIRYDRAGON_T6');
+            expect(msg).toBeDefined();
+            expect(msg.parameters['1']).toBe(416);
+
+            handler.NewMobEvent(normalizeParams(msg.parameters));
+
+            expect(handler.getSize()).toEqual(expect.objectContaining({mists: 0, mobs: 1}));
+            expect(handler.getMobList()[0].name).toBe('T6_MOB_MISTS_FAIRYDRAGON');
+        });
+
         // @verified 2026-07-05: wire 392 (2026-07-05 capture) -> T1_MOB_HIDE_MISTS_WOLPERTINGER, l=HIDE.
         // Real DB: type=Hide, tier=1, isHarvestable=true -> LivingSkinnable.
         test('pcap-derived spawn: living Hide mob typeId=392 adds as LivingSkinnable', async () => {
