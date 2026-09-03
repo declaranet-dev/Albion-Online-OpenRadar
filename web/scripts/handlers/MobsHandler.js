@@ -17,6 +17,18 @@ export const EnemyType =
 
 const MIST_PORTAL_NAME_PREFIX = 'MISTS_';
 
+const MIST_BOSSES = [
+    {match: '_MOB_MISTS_FAIRYDRAGON', icon: 'FAIRYDRAGON', setting: 'settingBossFairyDragon'},
+    {match: '_MOB_MISTS_GRIFFIN', icon: 'GRIFFIN', setting: 'settingBossGriffin'},
+    {match: '_MOB_MISTS_SPIDER', icon: 'VEILWEAVER', setting: 'settingBossVeilWeaver'},
+    {match: '_MOB_ARCANE_CRYSTALSPIDER', icon: 'CRYSTALSPIDER', setting: 'settingBossCrystalSpider'},
+];
+
+export function findMistBoss(uniqueName) {
+    const boss = MIST_BOSSES.find(b => typeof uniqueName === 'string' && uniqueName.includes(b.match));
+    return boss ? {icon: boss.icon, setting: boss.setting} : null;
+}
+
 export function isMistPortalName(name) {
     return typeof name === 'string' && name.toUpperCase().startsWith(MIST_PORTAL_NAME_PREFIX);
 }
@@ -216,7 +228,8 @@ export class MobsHandler {
         } else if (dbInfo) {
             // Hostile mob from MobsDatabase
             mob.type = this._getEnemyTypeFromCategory(dbInfo.category, dbInfo.uniqueName);
-            mob.name = dbInfo.uniqueName;  // For Mist Boss filtering
+            mob.mistBoss = findMistBoss(dbInfo.uniqueName);
+            mob.name = dbInfo.uniqueName;
             mob.tier = dbInfo.tier || 0;   // Store tier for hostile mobs
             mob.category = dbInfo.category || null;  // Store category for badge display
             mob.namelocatag = dbInfo.namelocatag || null;  // Store localization tag for translated name
@@ -489,6 +502,10 @@ export class MobsHandler {
     _getEnemyTypeFromCategory(category, uniqueName = '') {
         const cat = (category || '').toLowerCase();
         const name = (uniqueName || '').toUpperCase();
+
+        if (findMistBoss(name)) {
+            return EnemyType.MistBoss;
+        }
 
         // 🔍 Name-based heuristics (checked FIRST, before category)
         // These override category-based classification

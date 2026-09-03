@@ -97,6 +97,39 @@ describe('MobsHandler', () => {
             expect(handler.getMobList()[0].name).toBe('T6_MOB_MISTS_FAIRYDRAGON');
         });
 
+        // @verified 2026-09-03: pcap-derived, 2026-09-03 Mists capture, wire 416. The fairy dragon is one of the
+        // four Mists bosses the enemies page lists; it classifies as MistBoss with its icon and setting attached.
+        test('pcap-derived mist-boss: fairy dragon classifies as MistBoss with icon FAIRYDRAGON', async () => {
+            const fx = await loadFixture('mobs', 'mist-boss-spawn');
+            const msg = fx.messages.find(m => m.parameters['1'] === 416);
+
+            handler.NewMobEvent(normalizeParams(msg.parameters));
+
+            const mob = handler.getMobList()[0];
+            expect(mob.type).toBe(EnemyType.MistBoss);
+            expect(mob.tier).toBe(6);
+            expect(mob.mistBoss).toEqual({icon: 'FAIRYDRAGON', setting: 'settingBossFairyDragon'});
+        });
+
+        // @verified 2026-09-03: name-derived wire ids for the three bosses not yet observed in the corpus. The
+        // Mists spider is the Veil Weaver; the crystal spider keeps MistBoss over its _BOSS suffix.
+        test.each([
+            ['T7_MOB_MISTS_GRIFFIN', 'GRIFFIN', 'settingBossGriffin'],
+            ['T5_MOB_MISTS_SPIDER', 'VEILWEAVER', 'settingBossVeilWeaver'],
+            ['T6_MOB_ARCANE_CRYSTALSPIDER_BOSS', 'CRYSTALSPIDER', 'settingBossCrystalSpider'],
+            ['T8_MOB_ARCANE_CRYSTALSPIDER_VETERAN_BOSS', 'CRYSTALSPIDER', 'settingBossCrystalSpider'],
+        ])('mist-boss: %s classifies as MistBoss with icon %s', (uniqueName, icon, setting) => {
+            const typeId = dbs.mobsDatabase.getTypeIdByName(uniqueName);
+            expect(typeId).not.toBeNull();
+            const p = normalizeParams({'0': 97000 + typeId, '1': typeId, '2': 255, '7': [0, 0], '13': 3000, '34': 0});
+
+            handler.NewMobEvent(p);
+
+            const mob = handler.getMobList()[0];
+            expect(mob.type).toBe(EnemyType.MistBoss);
+            expect(mob.mistBoss).toEqual({icon, setting});
+        });
+
         // @verified 2026-07-05: wire 392 (2026-07-05 capture) -> T1_MOB_HIDE_MISTS_WOLPERTINGER, l=HIDE.
         // Real DB: type=Hide, tier=1, isHarvestable=true -> LivingSkinnable.
         test('pcap-derived spawn: living Hide mob typeId=392 adds as LivingSkinnable', async () => {
