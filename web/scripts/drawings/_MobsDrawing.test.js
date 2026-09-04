@@ -2,6 +2,9 @@
 // synthetic: constructed entities or name-derived wire ids for variants not observed in the post-patch corpus.
 
 import {describe, test, expect, beforeEach, vi} from 'vitest';
+import {existsSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {dirname, join} from 'node:path';
 import {loadFixture, normalizeParams} from '../__fixtures__/loader.js';
 import {installRealDatabasesOnWindow} from '../__fixtures__/realDatabases.js';
 
@@ -227,6 +230,27 @@ describe('MobsDrawing DEAD critter routing (user live-test 2026-04-24: dead crit
         drawing.invalidate(ctx, mobsHandler.getMobList(), []);
 
         expect(drawing.DrawCustomImage).toHaveBeenCalledWith(ctx, expect.any(Number), expect.any(Number), 'FAIRYDRAGON', 'Resources', expect.any(Number));
+    });
+
+    // @verified 2026-09-04: every Mists boss icon the drawing asks for exists on disk at the path
+    // DrawCustomImage composes, so the embedded server can serve it.
+    test.each([
+        'T6_MOB_MISTS_FAIRYDRAGON',
+        'T7_MOB_MISTS_GRIFFIN',
+        'T5_MOB_MISTS_SPIDER',
+        'T6_MOB_ARCANE_CRYSTALSPIDER_BOSS',
+    ])('full-flow: %s asks for an icon that exists under web/images', (uniqueName) => {
+        const typeId = window.mobsDatabase.getTypeIdByName(uniqueName);
+        expect(typeId).not.toBeNull();
+        settingsSync.getBool.mockImplementation(key => key !== 'settingResourceColorBadges');
+
+        mobsHandler.NewMobEvent(normalizeParams({'0': 95000 + typeId, '1': typeId, '2': 255, '7': [0, 0], '13': 3000, '34': 0}));
+        drawing.invalidate(ctx, mobsHandler.getMobList(), []);
+
+        expect(drawing.DrawCustomImage).toHaveBeenCalledTimes(1);
+        const [, , , imageName, folder] = drawing.DrawCustomImage.mock.calls[0];
+        const file = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'images', folder, `${imageName}.webp`);
+        expect(existsSync(file), file).toBe(true);
     });
 
     test('full-flow: fairy dragon is skipped when settingBossFairyDragon is off', async () => {
