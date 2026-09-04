@@ -25,8 +25,7 @@ const MIST_BOSSES = [
 ];
 
 export function findMistBoss(uniqueName) {
-    const boss = MIST_BOSSES.find(b => typeof uniqueName === 'string' && uniqueName.includes(b.match));
-    return boss ? {icon: boss.icon, setting: boss.setting} : null;
+    return MIST_BOSSES.find(b => typeof uniqueName === 'string' && uniqueName.includes(b.match)) ?? null;
 }
 
 export function isMistPortalName(name) {
@@ -117,7 +116,6 @@ export class MobsHandler {
 
     /**
      * Calculate enchantment level from game parameters
-     * Uses parameters[34] directly (server data is reliable)
      */
     calculateEnchantment(paramsEnchant) {
         if (paramsEnchant !== null && paramsEnchant !== undefined) {
@@ -227,8 +225,8 @@ export class MobsHandler {
             });
         } else if (dbInfo) {
             // Hostile mob from MobsDatabase
-            mob.type = this._getEnemyTypeFromCategory(dbInfo.category, dbInfo.uniqueName);
             mob.mistBoss = findMistBoss(dbInfo.uniqueName);
+            mob.type = mob.mistBoss ? EnemyType.MistBoss : this._getEnemyTypeFromCategory(dbInfo.category, dbInfo.uniqueName);
             mob.name = dbInfo.uniqueName;
             mob.tier = dbInfo.tier || 0;   // Store tier for hostile mobs
             mob.category = dbInfo.category || null;  // Store category for badge display
@@ -267,7 +265,6 @@ export class MobsHandler {
             source: hasKnownInfo ? 'MobsDatabase' : 'none'
         });
 
-        // Calculate enchantment from server data (parameters[34])
         if (mob.type === EnemyType.LivingHarvestable || mob.type === EnemyType.LivingSkinnable) {
             mob.enchantmentLevel = this.calculateEnchantment(enchant);
         }
@@ -502,10 +499,6 @@ export class MobsHandler {
     _getEnemyTypeFromCategory(category, uniqueName = '') {
         const cat = (category || '').toLowerCase();
         const name = (uniqueName || '').toUpperCase();
-
-        if (findMistBoss(name)) {
-            return EnemyType.MistBoss;
-        }
 
         // 🔍 Name-based heuristics (checked FIRST, before category)
         // These override category-based classification

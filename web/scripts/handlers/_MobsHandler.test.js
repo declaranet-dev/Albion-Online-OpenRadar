@@ -94,7 +94,7 @@ describe('MobsHandler', () => {
             const mob = handler.getMobList()[0];
             expect(mob.type).toBe(EnemyType.MistBoss);
             expect(mob.tier).toBe(6);
-            expect(mob.mistBoss).toEqual({icon: 'FAIRYDRAGON', setting: 'settingBossFairyDragon'});
+            expect(mob.mistBoss).toMatchObject({icon: 'FAIRYDRAGON', setting: 'settingBossFairyDragon'});
         });
 
         // @verified 2026-09-03: name-derived wire ids for the three bosses not yet observed in the corpus. The
@@ -113,7 +113,7 @@ describe('MobsHandler', () => {
 
             const mob = handler.getMobList()[0];
             expect(mob.type).toBe(EnemyType.MistBoss);
-            expect(mob.mistBoss).toEqual({icon, setting});
+            expect(mob.mistBoss).toMatchObject({icon, setting});
         });
 
         // @verified 2026-09-03: wire 396 (2026-09-03 capture) -> T1_MOB_HIDE_MISTS_WOLPERTINGER, l=HIDE.
