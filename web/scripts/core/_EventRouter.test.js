@@ -1063,14 +1063,6 @@ describe('EventRouter', () => {
             expect(allHandlerCalls()).toHaveLength(0);
         });
 
-        // @verified 2026-04-18: code 590 (BotCommand) is logging-only, no handler dispatch
-        test('code 590 is logging-only and invokes no handler method', () => {
-            // synthetic: code 590 exists as literal in EventRouter switch
-            EventRouter.onEvent({0: 1, 252: 590});
-
-            expect(allHandlerCalls()).toHaveLength(0);
-        });
-
         // @verified 2026-04-18: completely unknown code produces no side effect and no throw
         test('unknown event code 9999 does not invoke any handler method and does not throw', () => {
             // synthetic

@@ -479,11 +479,6 @@ export function onEvent(Parameters) {
             playersHandler.updatePlayerFaction(Parameters[0], Parameters[1]);
             break;
 
-        // Local dispatch labels this key_sync; upstream names it UpdateEnemyWarBannerActive.
-        case EventCodes.UpdateEnemyWarBannerActive:
-            window.logger?.debug(CATEGORIES.NETWORK, 'key_sync', {Parameters});
-            break;
-
         case EventCodes.MistsPlayerJoinedInfo: {
             const newMapId = Parameters[2];
             if (Parameters[3] === true && typeof newMapId === 'string' && newMapId.length > 0 && newMapId !== map.id) {
